@@ -28,6 +28,15 @@ both the domain and authentication options. For example:
 Only `hostname`, is required. Everything else is optional. It will
 default to port 25 if it is not specified.
 
+Use the `smtps` scheme for a server which expects implicit TLS (the
+connection is encrypted from the start, RFC 8314): it defaults to port
+465, and sets the `tls` option of mail and action mailer.
+
+    smtps://user:secret@mailserver/?domain=test.com
+
+With the `smtp` scheme, mail and action mailer upgrade the connection with
+STARTTLS when the server offers it (usually on port 587).
+
 Percent-encode the special characters of the user and the password
 (RFC 3986), for example `@` as `%40` and `/` as `%2F`: they are decoded
 before being passed to mail or action mailer.

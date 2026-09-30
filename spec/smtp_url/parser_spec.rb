@@ -15,6 +15,26 @@ RSpec.describe SmtpURL::Parser, '#parse' do
     expect(settings[:port]).to eq(587)
   end
 
+  it "should not enable implicit TLS for smtp urls" do
+    url = "smtp://test.com:587"
+    settings = SmtpURL::Parser.new(url).parse
+    expect(settings).not_to have_key(:tls)
+  end
+
+  it "should enable implicit TLS on port 465 for smtps urls" do
+    url = "smtps://user:secret@test.com"
+    settings = SmtpURL::Parser.new(url).parse
+    expect(settings[:port]).to eq(465)
+    expect(settings[:tls]).to eq(true)
+  end
+
+  it "should allow setting port for smtps urls" do
+    url = "smtps://test.com:2465"
+    settings = SmtpURL::Parser.new(url).parse
+    expect(settings[:port]).to eq(2465)
+    expect(settings[:tls]).to eq(true)
+  end
+
   it "should handle urls without authentication" do
     url = "smtp://test.com"
     settings = SmtpURL::Parser.new(url).parse
@@ -63,8 +83,8 @@ RSpec.describe SmtpURL::Parser, '#parse' do
     expect { SmtpURL::Parser.new(url).parse }.to raise_error(SmtpURL::InvalidUrlException, "Could not parse SMTP_URL env var")
   end
 
-  it "should raise InvalidUriException if url is not smtp" do
+  it "should raise InvalidUriException if url is not smtp nor smtps" do
     url = "http://test.com"
-    expect { SmtpURL::Parser.new(url).parse }.to raise_error(SmtpURL::InvalidUrlException, "Improper format of SMTP_URL env var, must be smtp://")
+    expect { SmtpURL::Parser.new(url).parse }.to raise_error(SmtpURL::InvalidUrlException, "Improper format of SMTP_URL env var, must be smtp:// or smtps://")
   end
 end
