@@ -28,6 +28,10 @@ both the domain and authentication options. For example:
 Only `hostname`, is required. Everything else is optional. It will
 default to port 25 if it is not specified.
 
+Percent-encode the special characters of the user and the password
+(RFC 3986), for example `@` as `%40` and `/` as `%2F`: they are decoded
+before being passed to mail or action mailer.
+
 Set SMTP_URL in your server setup like so:
 
     export SMTP_URL=smtp://user:secret@mailserver:587/?domain=test.com

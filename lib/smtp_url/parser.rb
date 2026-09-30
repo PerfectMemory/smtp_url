@@ -32,10 +32,15 @@ module SmtpURL
         :address        => config.host,
         :port           => config.port || 25,
         :domain         => query[:domain],
-        :user_name      => config.user,
-        :password       => config.password,
+        :user_name      => decode(config.user),
+        :password       => decode(config.password),
         :authentication => query[:authentication].try(:to_sym)
       }
+    end
+
+    # userinfo is percent-encoded (RFC 3986): a '+' is a plus sign, not a space
+    def decode(component)
+      component && URI.decode_uri_component(component)
     end
 
     def split_query_params(query = nil)

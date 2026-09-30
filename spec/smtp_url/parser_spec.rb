@@ -31,6 +31,19 @@ RSpec.describe SmtpURL::Parser, '#parse' do
     expect(settings[:password]).to eq('secret')
   end
 
+  it "should decode percent-encoded credentials" do
+    url = "smtp://user%40example.com:p%40ss%2Fw%3Ard%25@test.com"
+    settings = SmtpURL::Parser.new(url).parse
+    expect(settings[:user_name]).to eq('user@example.com')
+    expect(settings[:password]).to eq('p@ss/w:rd%')
+  end
+
+  it "should keep a plus sign in credentials (not a space)" do
+    url = "smtp://user:se+cret@test.com"
+    settings = SmtpURL::Parser.new(url).parse
+    expect(settings[:password]).to eq('se+cret')
+  end
+
   it "should parse domain from query params" do
     url = "smtp://test.com/?domain=test2.com"
     settings = SmtpURL::Parser.new(url).parse
