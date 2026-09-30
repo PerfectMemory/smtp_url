@@ -1,43 +1,43 @@
 require 'spec_helper'
 require 'smtp_url/railtie'
 
-module Rails
-  class << self
-    attr_accessor :logger
-  end
-end
+RSpec.describe SmtpURL::Railtie do
+  let(:action_mailer) { double('action_mailer').as_null_object }
+  let(:logger) { instance_double(Logger, warn: nil) }
 
-describe SmtpURL::Railtie do
+  # run_initializers runs them only once per railtie: run them directly instead
+  def run_initializers
+    SmtpURL::Railtie.instance.initializers.each(&:run)
+  end
+
   before do
-    Rails::Railtie::Configuration.any_instance.stub(:action_mailer).and_return(mock_config)
-    Rails.logger = Logger.new(STDOUT)
-    SmtpURL::Railtie.any_instance.stub(:instance_variable_defined?).and_return(false)
+    allow_any_instance_of(Rails::Railtie::Configuration).to receive(:action_mailer).and_return(action_mailer)
+    allow(Rails).to receive(:logger).and_return(logger)
   end
 
-  let(:mock_config) do
-    mock('mock_config').as_null_object
+  around do |example|
+    smtp_url = ENV['SMTP_URL']
+    example.run
+  ensure
+    ENV['SMTP_URL'] = smtp_url
   end
 
   context 'with SMTP_URL defined' do
-    before do
-      ENV['SMTP_URL'] = 'smtp://localhost:1025'
-    end
+    before { ENV['SMTP_URL'] = 'smtp://localhost:1025' }
 
-    it "should setup action_mailer settings when SMTP_URL is set" do
-      mock_config.should_receive(:delivery_method=).with(:smtp)
-      mock_config.should_receive(:smtp_settings=)
-      SmtpURL::Railtie.run_initializers
-    end
-
-    after do
-      ENV['SMTP_URL'] = nil
+    it 'should setup action_mailer settings when SMTP_URL is set' do
+      expect(action_mailer).to receive(:delivery_method=).with(:smtp)
+      expect(action_mailer).to receive(:smtp_settings=).with({ address: 'localhost', port: 1025 })
+      run_initializers
     end
   end
 
   context 'without SMTP_URL defined' do
-    it "should log a warning if SMTP_URL is not set" do
-      Rails.logger.should_receive(:warn).with('SmtpURL did not setup your email delivery because the SMTP_URL env var was missing')
-      SmtpURL::Railtie.run_initializers
+    before { ENV.delete('SMTP_URL') }
+
+    it 'should log a warning if SMTP_URL is not set' do
+      expect(logger).to receive(:warn).with('SmtpURL did not setup your email delivery because the SMTP_URL env var was missing')
+      run_initializers
     end
   end
 end

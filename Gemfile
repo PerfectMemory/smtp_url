@@ -1,10 +1,9 @@
 source 'https://rubygems.org'
 
-gem 'activesupport'
+gemspec
 
 group :test do
   gem 'rspec'
-  gem 'mocha'
   gem 'rake'
   gem 'railties'
 end

@@ -1,8 +1,11 @@
 require 'rspec'
-require 'action_controller/railtie'
+require 'rails'
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
+  config.expect_with(:rspec) { |c| c.syntax = :expect }
+  config.mock_with(:rspec) { |c| c.syntax = :expect }
+  config.disable_monkey_patching!
+  config.raise_errors_for_deprecations!
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
   config.order = 'random'
