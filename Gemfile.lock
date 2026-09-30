@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    smtp_url (0.3.0)
+    smtp_url (0.4.0)
       activesupport
 
 GEM
